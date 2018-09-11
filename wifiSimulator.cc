@@ -172,9 +172,11 @@ int main (int argc, char *argv[]){
 	Simulator::Stop (Seconds (10.0)); //Para a simulaçao
 	
 	//Faz o rastreamento das redes para ver o que esta acontecendo
-	pointToPoint.EnablePcapAll ("third");
-    phy.EnablePcap ("third", apDevices.Get (0));
-	csma.EnablePcap ("third", csmaDevices.Get (0), true);
+	if (verbose){
+		pointToPoint.EnablePcapAll ("P2PNodes");
+		phy.EnablePcap ("ApNode", apDevices.Get (0));
+		csma.EnablePcap ("CSMANodes", csmaDevices.Get (0), true);
+	}
 	
 	Simulator::Run ();
     Simulator::Destroy ();
