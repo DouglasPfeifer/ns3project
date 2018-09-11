@@ -99,8 +99,7 @@ int main (int argc, char *argv[]){
     staDevices = wifi.Install (phy, mac, wifiStaNodes);
 	
 	//Configura o Ponto de acesso
-	mac.SetType ("ns3::NqapWifiMac", "Ssid", SsidValue (ssid),"BeaconGeneration", BooleanValue (true),"BeaconInterval", TimeValue (Seconds (2.5)));
-	//--O que e beaconGeneration e BeaconInterval  
+	mac.SetType ("ns3::ApWifiMac","Ssid", SsidValue (ssid));
 	  
 	//Uma vez configurado, basta instalar o Ponto de acesso
 	NetDeviceContainer apDevices;
