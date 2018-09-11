@@ -1,4 +1,4 @@
- // Topologia da rede
+a // Topologia da rede
  //
  // Wifi 10.1.3.0
  //                    AP
@@ -21,7 +21,7 @@
 
 using namespace ns3;
 
-NS_LOG_COMPONENT_DEFINE ("FirstScriptExample");
+NS_LOG_COMPONENT_DEFINE ("PrimeiroExemploRC2");
 
 int main (int argc, char *argv[]){
 	bool tracing = true;
@@ -46,8 +46,6 @@ int main (int argc, char *argv[]){
 		LogComponentEnable ("UdpEchoClientApplication", LOG_LEVEL_INFO);
 		LogComponentEnable ("UdpEchoServerApplication", LOG_LEVEL_INFO);
     }
-	
-	
 	
 	//Cria dois nos
 	NodeContainer p2pNodes;
@@ -99,8 +97,8 @@ int main (int argc, char *argv[]){
     staDevices = wifi.Install (phy, mac, wifiStaNodes);
 	
 	//Configura o Ponto de acesso
-	mac.SetType ("ns3::NqapWifiMac", "Ssid", SsidValue (ssid),"BeaconGeneration", BooleanValue (true),"BeaconInterval", TimeValue (Seconds (2.5)));
-	//--O que e beaconGeneration e BeaconInterval  
+	
+	mac.SetType ("ns3::ApWifiMac","Ssid", SsidValue (ssid));
 	  
 	//Uma vez configurado, basta instalar o Ponto de acesso
 	NetDeviceContainer apDevices;
@@ -173,9 +171,11 @@ int main (int argc, char *argv[]){
 	Simulator::Stop (Seconds (10.0)); //Para a simulaçao
 	
 	//Faz o rastreamento das redes para ver o que esta acontecendo
-	pointToPoint.EnablePcapAll ("third");
-    phy.EnablePcap ("third", apDevices.Get (0));
-	csma.EnablePcap ("third", csmaDevices.Get (0), true);
+	if (tracing){
+		pointToPoint.EnablePcapAll ("third");
+		phy.EnablePcap ("third", apDevices.Get (0));
+		csma.EnablePcap ("third", csmaDevices.Get (0), true);	
+	}
 	
 	Simulator::Run ();
     Simulator::Destroy ();
