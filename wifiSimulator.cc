@@ -48,6 +48,32 @@ int main (int argc, char *argv[]){
     }
 	
 	
+	NodeContainer hosts;
+	hosts.Create(50);
+	
+	NodeContainer server;
+	server.Create(1);
+	
+	NodeContainer accessPoint;
+	accessPoint.Create(5);
+
+	//50 hosts, 5 AP's e 1 Server
+	
+	PointToPointHelper pointToPoint;
+    pointToPoint.SetDeviceAttribute ("DataRate", StringValue ("5Mbps"));
+    pointToPoint.SetChannelAttribute ("Delay", StringValue ("2ms"));
+	
+	NetDeviceContainer p2pDevices;
+	
+	for (int i=0; i<5;i++){
+		p2pDevices.add(pointToPoint.Install(accessPoint.Get(i), server));
+	}
+	
+	/*	
+	
+	
+	
+	
 	
 	//Cria dois nos
 	NodeContainer p2pNodes;
@@ -105,11 +131,16 @@ int main (int argc, char *argv[]){
 	NetDeviceContainer apDevices;
     apDevices = wifi.Install (phy, mac, wifiApNode);
 	
+	*/
+	
+	
 	
 	/*Nao faz sentido os clientes que utilizam Wifi ficarem parados
 	portanto, sera utilizado o mobilityHelper para fazerem os nos se moverem, enquanto
 	o ponto de acesso fica parado*/
 	
+	
+	/*
 	MobilityHelper mobility;
 
     mobility.SetPositionAllocator ("ns3::GridPositionAllocator", "MinX", DoubleValue (0.0),"MinY", DoubleValue (0.0),"DeltaX",
@@ -135,10 +166,12 @@ int main (int argc, char *argv[]){
 	
 	Ipv4AddressHelper address;
 
+	//Cria 5 interfaces
+
     address.SetBase ("10.1.1.0", "255.255.255.0");//Interface P2P
     Ipv4InterfaceContainer p2pInterfaces;
     p2pInterfaces = address.Assign (p2pDevices);
-
+    
     address.SetBase ("10.1.2.0", "255.255.255.0");//Interface CSMA
     Ipv4InterfaceContainer csmaInterfaces;
     csmaInterfaces = address.Assign (csmaDevices);
@@ -146,8 +179,7 @@ int main (int argc, char *argv[]){
     address.SetBase ("10.1.3.0", "255.255.255.0");//Interface Wifi
     address.Assign (staDevices);
     address.Assign (apDevices);
-	
-	
+    	
 	//Cria o servidor de eco UDP (Espera os pacotes UDP, e retorna eles para quem os enviou)
 	UdpEchoServerHelper echoServer (9);
 
@@ -176,7 +208,7 @@ int main (int argc, char *argv[]){
 		pointToPoint.EnablePcapAll ("P2PNodes");
 		phy.EnablePcap ("ApNode", apDevices.Get (0));
 		csma.EnablePcap ("CSMANodes", csmaDevices.Get (0), true);
-	}
+	}*/
 	
 	Simulator::Run ();
     Simulator::Destroy ();
