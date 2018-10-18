@@ -27,7 +27,7 @@ int main (int argc, char *argv[]){
 	bool tracing = true;
 	bool verbose = true;
 	uint32_t nCsma = 3;
-    uint32_t nWifi = 3;
+    uint32_t nWifi = 10;
 	
 	CommandLine cmd;
     cmd.AddValue ("nCsma", "Number of \"extra\" CSMA nodes/devices", nCsma);
@@ -47,46 +47,35 @@ int main (int argc, char *argv[]){
 		LogComponentEnable ("UdpEchoServerApplication", LOG_LEVEL_INFO);
     }
 	
-	
-	NodeContainer hosts;
-	hosts.Create(50);
+	NodeContainer apNodeContainer;
+	apNodeContainer.Create(5);
 	
 	NodeContainer server;
 	server.Create(1);
 	
-	NodeContainer accessPoint;
-	accessPoint.Create(5);
-
-	//50 hosts, 5 AP's e 1 Server
-	
-	PointToPointHelper pointToPoint;
-    pointToPoint.SetDeviceAttribute ("DataRate", StringValue ("5Mbps"));
-    pointToPoint.SetChannelAttribute ("Delay", StringValue ("2ms"));
-	
-	NetDeviceContainer p2pDevices;
-	
-	for (int i=0; i<5;i++){
-		p2pDevices.add(pointToPoint.Install(accessPoint.Get(i), server));
-	}
-	
-	/*	
-	
-	
-	
-	
-	
+	//*DELETE
 	//Cria dois nos
 	NodeContainer p2pNodes;
 	p2pNodes.Create (2);
+	//
 	
+			
 	//Seta as configuraçes de comunicaçao
 	PointToPointHelper pointToPoint;
     pointToPoint.SetDeviceAttribute ("DataRate", StringValue ("5Mbps"));
     pointToPoint.SetChannelAttribute ("Delay", StringValue ("2ms"));
-
+    
+    
+    NetDeviceContainer apConnection;
+   
+   	for (int i=0; i<5;i++){
+   		apConnection.Add(pointToPoint.Install(apNodeContainer.Get(i), server.Get(0)));
+   	}
+    
+	//*DELETE
 	//Faz a conexo ponto a ponto
     NetDeviceContainer p2pDevices;
-    p2pDevices = pointToPoint.Install (p2pNodes);
+    p2pDevices = pointToPoint.Install (p2pNodes.Get(0),p2pNodes.Get(1));
 	
 	//Seta o no 1 para ser conexao csma (para rede com fio)
 	NodeContainer csmaNodes;
@@ -99,13 +88,20 @@ int main (int argc, char *argv[]){
 
     NetDeviceContainer csmaDevices;
     csmaDevices = csma.Install (csmaNodes);
+	//
+	
+	
 	
 	//Cria os nos que farao parte da rede wifi
 	NodeContainer wifiStaNodes;
     wifiStaNodes.Create (nWifi);
 	
+	//*DELETE
 	//Seta o no 0 para ser o ponto de acesso
     NodeContainer wifiApNode = p2pNodes.Get(0);
+    //
+    
+    
 	
 	//Cria a conexao wifi
 	YansWifiChannelHelper channel = YansWifiChannelHelper::Default();
@@ -131,16 +127,13 @@ int main (int argc, char *argv[]){
 	NetDeviceContainer apDevices;
     apDevices = wifi.Install (phy, mac, wifiApNode);
 	
-	*/
-	
-	
 	
 	/*Nao faz sentido os clientes que utilizam Wifi ficarem parados
 	portanto, sera utilizado o mobilityHelper para fazerem os nos se moverem, enquanto
 	o ponto de acesso fica parado*/
 	
 	
-	/*
+	
 	MobilityHelper mobility;
 
     mobility.SetPositionAllocator ("ns3::GridPositionAllocator", "MinX", DoubleValue (0.0),"MinY", DoubleValue (0.0),"DeltaX",
@@ -208,7 +201,7 @@ int main (int argc, char *argv[]){
 		pointToPoint.EnablePcapAll ("P2PNodes");
 		phy.EnablePcap ("ApNode", apDevices.Get (0));
 		csma.EnablePcap ("CSMANodes", csmaDevices.Get (0), true);
-	}*/
+	}
 	
 	Simulator::Run ();
     Simulator::Destroy ();
