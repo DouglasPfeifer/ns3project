@@ -72,6 +72,39 @@ int main (int argc, char *argv[]){
    		apConnection.Add(pointToPoint.Install(apNodeContainer.Get(i), server.Get(0)));
    	}
     
+	//Nesse momento, temos todos os Ap's linkados ao server, temos apenas que settar as interfaces
+	
+	Ipv4AddressHelper address;
+
+	//Cria 5 interfaces
+
+    address.SetBase ("10.1.1.0", "255.255.255.0");//Interface P2P
+    Ipv4InterfaceContainer p2pInterfaces;
+    p2pInterfaces.Add(address.Assign (p2pDevices));
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
 	//*DELETE
 	//Faz a conexo ponto a ponto
     NetDeviceContainer p2pDevices;
