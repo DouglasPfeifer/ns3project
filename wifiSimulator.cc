@@ -18,10 +18,46 @@
 #include "ns3/csma-module.h"
 #include "ns3/internet-module.h"
 #include <bits/stdc++.h>
+#include <string>
+#include <sstream>
 
 using namespace ns3;
+using namespace std;
+
+
+typedef struct a {
+	NodeContainer nodes;
+	struct a *prox;
+} Fila;
+
+Fila *clientes = NULL;
 
 NS_LOG_COMPONENT_DEFINE ("FirstScriptExample");
+
+void criaCliente(){
+	Fila *aux;
+	Fila *temp;
+	
+	aux = (Fila *) malloc(sizeof(Fila));
+	
+	
+	InternetStackHelper stack;
+	
+	aux->nodes.Create(5);
+	aux->prox = NULL;
+	
+	stack.Install(aux->nodes);
+	
+	if (clientes == NULL){
+		clientes = aux;
+	} else {
+		temp = clientes;
+		
+		while (temp->prox != NULL) temp = temp->prox;
+		
+		temp->prox = aux;
+	}
+}
 
 int main (int argc, char *argv[]){
 	bool tracing = true;
@@ -59,7 +95,7 @@ int main (int argc, char *argv[]){
 	p2pNodes.Create (2);
 	//
 	
-			
+	
 	//Seta as configuraçes de comunicaçao
 	PointToPointHelper pointToPoint;
     pointToPoint.SetDeviceAttribute ("DataRate", StringValue ("5Mbps"));
@@ -74,37 +110,33 @@ int main (int argc, char *argv[]){
     
 	//Nesse momento, temos todos os Ap's linkados ao server, temos apenas que settar as interfaces
 	
-	Ipv4AddressHelper address;
-
+	for (int i=0; i<5 ; i++){
+		criaCliente();
+	}
+	
+	//Cria pilha de internet
+	InternetStackHelper pilha;
+    pilha.Install (apNodeContainer);
+    pilha.Install (server);
+    
+    	
 	//Cria 5 interfaces
+    Ipv4InterfaceContainer interface;
+   	Ipv4AddressHelper endereco;
 
-    address.SetBase ("10.1.1.0", "255.255.255.0");//Interface P2P
-    Ipv4InterfaceContainer p2pInterfaces;
-    p2pInterfaces.Add(address.Assign (p2pDevices));
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
+    char ip[] = "10.1.1.0";
+
+	for (int i = 1; i < 6; i++){
+		ip[5] = (char)(48 + i);
+		cout << "IP: " << ip << endl;
+		endereco.SetBase (ip, "255.255.255.0");//Interface P2P
+		interface.Add(endereco.Assign(apConnection.Get(i)));
+    }
+    
+    
+    
+    
+
 	//*DELETE
 	//Faz a conexo ponto a ponto
     NetDeviceContainer p2pDevices;
