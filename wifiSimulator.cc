@@ -59,6 +59,17 @@ void criaCliente(){
 	}
 }
 
+NodeContainer getNodes(int n){
+	Fila *temp = clientes;
+	
+	for (i=0;i<n;i++){
+		temp = temp->prox;
+	}
+	
+	return temp->nodes;
+	
+}
+
 int main (int argc, char *argv[]){
 	bool tracing = true;
 	bool verbose = true;
@@ -89,12 +100,6 @@ int main (int argc, char *argv[]){
 	NodeContainer server;
 	server.Create(1);
 	
-	//*DELETE
-	//Cria dois nos
-	NodeContainer p2pNodes;
-	p2pNodes.Create (2);
-	//
-	
 	
 	//Seta as configuraçes de comunicaçao
 	PointToPointHelper pointToPoint;
@@ -113,91 +118,67 @@ int main (int argc, char *argv[]){
 	for (int i=0; i<5 ; i++){
 		criaCliente();
 	}
-	
+    
 	//Cria pilha de internet
 	InternetStackHelper pilha;
     pilha.Install (apNodeContainer);
     pilha.Install (server);
-    
     	
-	//Cria 5 interfaces
-    Ipv4InterfaceContainer interface;
-   	Ipv4AddressHelper endereco;
-
-    char ip[] = "10.1.1.0";
-
-	for (int i = 1; i < 6; i++){
-		ip[5] = (char)(48 + i);
-		cout << "IP: " << ip << endl;
-		endereco.SetBase (ip, "255.255.255.0");//Interface P2P
-		interface.Add(endereco.Assign(apConnection.Get(i)));
-    }
     
-    
-    
-    
-
-	//*DELETE
-	//Faz a conexo ponto a ponto
-    NetDeviceContainer p2pDevices;
-    p2pDevices = pointToPoint.Install (p2pNodes.Get(0),p2pNodes.Get(1));
-	
-	//Seta o no 1 para ser conexao csma (para rede com fio)
-	NodeContainer csmaNodes;
-	csmaNodes.Add (p2pNodes.Get (1));
-	csmaNodes.Create (nCsma);
-	
-	CsmaHelper csma;
-    csma.SetChannelAttribute ("DataRate", StringValue("100Mbps"));
-    csma.SetChannelAttribute ("Delay", TimeValue(NanoSeconds (6560)));
-
-    NetDeviceContainer csmaDevices;
-    csmaDevices = csma.Install (csmaNodes);
-	//
-	
-	
-	
-	//Cria os nos que farao parte da rede wifi
-	NodeContainer wifiStaNodes;
-    wifiStaNodes.Create (nWifi);
-	
-	//*DELETE
-	//Seta o no 0 para ser o ponto de acesso
-    NodeContainer wifiApNode = p2pNodes.Get(0);
-    //
-    
-    
-	
-	//Cria a conexao wifi
-	YansWifiChannelHelper channel = YansWifiChannelHelper::Default();
+    YansWifiChannelHelper channel = YansWifiChannelHelper::Default();
     YansWifiPhyHelper phy = YansWifiPhyHelper::Default();
 	phy.SetChannel (channel.Create());
 	
-	//Configura o MAC
 	WifiHelper wifi;
     wifi.SetRemoteStationManager ("ns3::AarfWifiManager");
 	WifiMacHelper mac;
 	
-	Ssid ssid = Ssid ("RC2-Example"); //Nome da rede
-    mac.SetType ("ns3::StaWifiMac", "Ssid", SsidValue (ssid), "ActiveProbing", BooleanValue (false));
 	
-	//Cria os dispositivos Wifi
-	NetDeviceContainer staDevices;
-    staDevices = wifi.Install (phy, mac, wifiStaNodes);
+	Ssid ssid = Ssid ("Rede1");
+	char nome[] = "Rede1";
 	
-	//Configura o Ponto de acesso
-	mac.SetType ("ns3::ApWifiMac","Ssid", SsidValue (ssid));
-	  
-	//Uma vez configurado, basta instalar o Ponto de acesso
+	NetDeviceContainer clientWifiDevices;
 	NetDeviceContainer apDevices;
-    apDevices = wifi.Install (phy, mac, wifiApNode);
+	
+	for (int i=0;i<5;i++){
+		nome[4] = (char)(49+i)
+		ssid = Ssid(nome)
+		
+		mac.SetType ("ns3::StaWifiMac", "Ssid", SsidValue (ssid), "ActiveProbing", BooleanValue (false));
+		staDevices.Add(wifi.Install (phy, mac, getNodes(i)));   
+		
+		mac.SetType ("ns3::ApWifiMac","Ssid", SsidValue (ssid));
+		apDevices.Add(wifi.Install (phy, mac, apNodeContainer.Get(i)));
+	}
+	
+	
+	
+	
+	//Cria 5 interfaces que conectam no servidor
+    Ipv4InterfaceContainer interface;
+   	Ipv4AddressHelper endereco;
+
+	endereco.SetBase ("10.1.6.0", "255.255.255.0");//Interface P2P
+	interface.Add(endereco.Assign(apConnection))
+	
+	char enderecoIp[] = "10.1.1.0"
+	
+	for (int i=0;i<5;i++){
+		enderecoIp[5] = (char)(49+i)
+		
+		endereco.SetBase (enderecoIP, "255.255.255.0");//Interface Wifi
+		endereco.Assign (getNodes(i));
+		endereco.Assign (apNodeContainer(i));
+	}
+    
+
 	
 	
 	/*Nao faz sentido os clientes que utilizam Wifi ficarem parados
 	portanto, sera utilizado o mobilityHelper para fazerem os nos se moverem, enquanto
 	o ponto de acesso fica parado*/
 	
-	
+	/*
 	
 	MobilityHelper mobility;
 
@@ -213,30 +194,13 @@ int main (int argc, char *argv[]){
 	mobility.SetMobilityModel ("ns3::ConstantPositionMobilityModel");
     mobility.Install (wifiApNode);
 	
-	//Cria a pilha de protocolos
-	
-	InternetStackHelper stack;
-    stack.Install (csmaNodes);
-    stack.Install (wifiApNode);
-    stack.Install (wifiStaNodes);
-	
 	//Seta IP's para as interfaces
 	
 	Ipv4AddressHelper address;
 
-	//Cria 5 interfaces
-
-    address.SetBase ("10.1.1.0", "255.255.255.0");//Interface P2P
-    Ipv4InterfaceContainer p2pInterfaces;
-    p2pInterfaces = address.Assign (p2pDevices);
-    
-    address.SetBase ("10.1.2.0", "255.255.255.0");//Interface CSMA
-    Ipv4InterfaceContainer csmaInterfaces;
-    csmaInterfaces = address.Assign (csmaDevices);
-
-    address.SetBase ("10.1.3.0", "255.255.255.0");//Interface Wifi
-    address.Assign (staDevices);
-    address.Assign (apDevices);
+	
+	
+	
     	
 	//Cria o servidor de eco UDP (Espera os pacotes UDP, e retorna eles para quem os enviou)
 	UdpEchoServerHelper echoServer (9);
@@ -267,7 +231,7 @@ int main (int argc, char *argv[]){
 		phy.EnablePcap ("ApNode", apDevices.Get (0));
 		csma.EnablePcap ("CSMANodes", csmaDevices.Get (0), true);
 	}
-	
+	*/
 	Simulator::Run ();
     Simulator::Destroy ();
     return (0);
