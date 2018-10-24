@@ -106,7 +106,6 @@ int main (int argc, char *argv[]){
     pointToPoint.SetDeviceAttribute ("DataRate", StringValue ("5Mbps"));
     pointToPoint.SetChannelAttribute ("Delay", StringValue ("2ms"));
     
-    
     NetDeviceContainer apConnection;
    
    	for (int i=0; i<5;i++){
@@ -151,9 +150,6 @@ int main (int argc, char *argv[]){
 		apDevices.Add(wifi.Install (phy, mac, apNodeContainer.Get(i)));
 	}
 	
-	
-	
-	
 	//Cria 5 interfaces que conectam no servidor
     Ipv4InterfaceContainer interface;
    	Ipv4AddressHelper endereco;
@@ -178,8 +174,8 @@ int main (int argc, char *argv[]){
 	portanto, sera utilizado o mobilityHelper para fazerem os nos se moverem, enquanto
 	o ponto de acesso fica parado*/
 	
-	/*
 	
+	/*
 	MobilityHelper mobility;
 
     mobility.SetPositionAllocator ("ns3::GridPositionAllocator", "MinX", DoubleValue (0.0),"MinY", DoubleValue (0.0),"DeltaX",
@@ -193,30 +189,24 @@ int main (int argc, char *argv[]){
 	//Seta o ponto de acesso para ficar fixo (ConstantPositionMobilityModel)
 	mobility.SetMobilityModel ("ns3::ConstantPositionMobilityModel");
     mobility.Install (wifiApNode);
-	
-	//Seta IP's para as interfaces
-	
-	Ipv4AddressHelper address;
-
+	*/
 	
 	
-	
-    	
 	//Cria o servidor de eco UDP (Espera os pacotes UDP, e retorna eles para quem os enviou)
 	UdpEchoServerHelper echoServer (9);
 
-    ApplicationContainer serverApps = echoServer.Install (csmaNodes.Get (3));//Faz para a interface CSMA (o servidor fica sendo o no 3)
+    ApplicationContainer serverApps = echoServer.Install (server.Get (0));//Setta o servidor de aplicação para ser o server
     serverApps.Start (Seconds (1.0));
     serverApps.Stop (Seconds (10.0));
 	
 	//Faz a mesma coisa com a interface Wifi, porem, ao inves de criar outro servidor, apenas faz o no apontar para o servidor ja criado na interface CSMA
-	
+	/*
 	UdpEchoClientHelper echoClient (csmaInterfaces.GetAddress (3), 9);//Pega o endereço do no 3 CSMA, que e o servidor de eco UDP
     echoClient.SetAttribute ("MaxPackets", UintegerValue (1));
     echoClient.SetAttribute ("Interval", TimeValue (Seconds (1.)));
-    echoClient.SetAttribute ("PacketSize", UintegerValue (1024));
+    echoClient.SetAttribute ("PacketSize", UintegerValue (1024));*/
 
-    ApplicationContainer clientApps = echoClient.Install (wifiStaNodes.Get (2));//Seta o servidor no no 2 wifi
+    ApplicationContainer clientApps = echoClient.Install (cliente->nodes.Get(0));//Seta o servidor no no 2 wifi
     clientApps.Start (Seconds (2.0));
     clientApps.Stop (Seconds (10.0));
 	
@@ -229,9 +219,9 @@ int main (int argc, char *argv[]){
 	if (verbose){
 		pointToPoint.EnablePcapAll ("P2PNodes");
 		phy.EnablePcap ("ApNode", apDevices.Get (0));
-		csma.EnablePcap ("CSMANodes", csmaDevices.Get (0), true);
+		csma.EnablePcap ("CSMANodes", servidor.Get (0), true);
 	}
-	*/
+
 	Simulator::Run ();
     Simulator::Destroy ();
     return (0);
