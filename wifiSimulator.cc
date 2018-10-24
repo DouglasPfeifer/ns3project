@@ -62,7 +62,7 @@ void criaCliente(){
 NodeContainer getNodes(int n){
 	Fila *temp = clientes;
 	
-	for (i=0;i<n;i++){
+	for (int i=0;i<n;i++){
 		temp = temp->prox;
 	}
 	
@@ -74,7 +74,7 @@ int main (int argc, char *argv[]){
 	bool tracing = true;
 	bool verbose = true;
 	uint32_t nCsma = 3;
-    uint32_t nWifi = 10;
+	uint32_t nWifi = 10;
 	
 	CommandLine cmd;
     cmd.AddValue ("nCsma", "Number of \"extra\" CSMA nodes/devices", nCsma);
@@ -136,15 +136,15 @@ int main (int argc, char *argv[]){
 	Ssid ssid = Ssid ("Rede1");
 	char nome[] = "Rede1";
 	
-	NetDeviceContainer clientWifiDevices;
+	NetDeviceContainer clienteWifiDevices;
 	NetDeviceContainer apDevices;
 	
 	for (int i=0;i<5;i++){
-		nome[4] = (char)(49+i)
-		ssid = Ssid(nome)
+		nome[4] = (char)(49+i);
+		ssid = Ssid(nome);
 		
 		mac.SetType ("ns3::StaWifiMac", "Ssid", SsidValue (ssid), "ActiveProbing", BooleanValue (false));
-		staDevices.Add(wifi.Install (phy, mac, getNodes(i)));   
+		clienteWifiDevices.Add(wifi.Install (phy, mac, getNodes(i)));   
 		
 		mac.SetType ("ns3::ApWifiMac","Ssid", SsidValue (ssid));
 		apDevices.Add(wifi.Install (phy, mac, apNodeContainer.Get(i)));
@@ -155,16 +155,16 @@ int main (int argc, char *argv[]){
    	Ipv4AddressHelper endereco;
 
 	endereco.SetBase ("10.1.6.0", "255.255.255.0");//Interface P2P
-	interface.Add(endereco.Assign(apConnection))
+	interface.Add(endereco.Assign(apConnection));
 	
-	char enderecoIp[] = "10.1.1.0"
-	
+	char enderecoIp[] = "10.1.1.0";
+	NodeContainer temp;
+
 	for (int i=0;i<5;i++){
-		enderecoIp[5] = (char)(49+i)
-		
-		endereco.SetBase (enderecoIP, "255.255.255.0");//Interface Wifi
-		endereco.Assign (getNodes(i));
-		endereco.Assign (apNodeContainer(i));
+		enderecoIp[5] = (char)(49+i);
+		endereco.SetBase (enderecoIp, "255.255.255.0");//Interface Wifi
+		endereco.Assign (clienteWifiDevices.Get(i));
+		endereco.Assign (apDevices.Get(i));
 	}
     
 
@@ -200,13 +200,13 @@ int main (int argc, char *argv[]){
     serverApps.Stop (Seconds (10.0));
 	
 	//Faz a mesma coisa com a interface Wifi, porem, ao inves de criar outro servidor, apenas faz o no apontar para o servidor ja criado na interface CSMA
-	/*
-	UdpEchoClientHelper echoClient (csmaInterfaces.GetAddress (3), 9);//Pega o endereço do no 3 CSMA, que e o servidor de eco UDP
+	
+	UdpEchoClientHelper echoClient (interface.GetAddress(0), 9);//Pega o endereço do no 3 CSMA, que e o servidor de eco UDP
     echoClient.SetAttribute ("MaxPackets", UintegerValue (1));
     echoClient.SetAttribute ("Interval", TimeValue (Seconds (1.)));
-    echoClient.SetAttribute ("PacketSize", UintegerValue (1024));*/
+    echoClient.SetAttribute ("PacketSize", UintegerValue (1024));
 
-    ApplicationContainer clientApps = echoClient.Install (cliente->nodes.Get(0));//Seta o servidor no no 2 wifi
+    ApplicationContainer clientApps = echoClient.Install (clientes->nodes.Get(0));//Seta o servidor no no 2 wifi
     clientApps.Start (Seconds (2.0));
     clientApps.Stop (Seconds (10.0));
 	
@@ -219,7 +219,7 @@ int main (int argc, char *argv[]){
 	if (verbose){
 		pointToPoint.EnablePcapAll ("P2PNodes");
 		phy.EnablePcap ("ApNode", apDevices.Get (0));
-		csma.EnablePcap ("CSMANodes", servidor.Get (0), true);
+		//csma.EnablePcap ("CSMANodes", servidor.Get (0), true);
 	}
 
 	Simulator::Run ();
