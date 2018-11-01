@@ -407,6 +407,15 @@ main (int argc, char *argv[])
     {
       Config::Connect ("/NodeList/*/$ns3::MobilityModel/CourseChange", MakeCallback (&CourseChangeCallback));
     }
+  /////////////////////////////////////////////////////////////////////////// 
+  //                                                                       //
+  // Config Monitor                                                        //
+  //                                                                       //
+  /////////////////////////////////////////////////////////////////////////// 
+
+    
+  FlowMonitorHelper flowmon;
+  Ptr<FlowMonitor> monitor = flowmon.InstallAll();
 
   /////////////////////////////////////////////////////////////////////////// 
   //                                                                       //
@@ -417,5 +426,49 @@ main (int argc, char *argv[])
   NS_LOG_INFO ("Run Simulation.");
   Simulator::Stop (Seconds (stopTime));
   Simulator::Run ();
+  
+  monitor->CheckForLostPackets ();
+    Ptr<Ipv4FlowClassifier> classifier =
+        DynamicCast<Ipv4FlowClassifier> (flowmon.GetClassifier ());
+    map<FlowId, FlowMonitor::FlowStats> stats = monitor->GetFlowStats ();
+
+    double sucess = 0, througMedia = 0;
+    map<FlowId, FlowMonitor::FlowStats>::const_iterator it = stats.begin ();
+    while (it != stats.end ()) {
+        Ipv4FlowClassifier::FiveTuple t = classifier->FindFlow (it->first);
+        double timePacket, throughput;
+        uint32_t lostPackets;
+
+        timePacket = (it->second.timeLastRxPacket.GetSeconds() -
+            it->second.timeFirstTxPacket.GetSeconds());
+        throughput = (it->second.rxBytes * 8.0) / timePacket;
+        lostPackets = ((it->second.txBytes) - (it->second.rxBytes)) / pktSize;
+
+        sucess += (1.0 * it->second.rxBytes) / it->second.txBytes;
+        througMedia += throughput / 1024;
+
+        fdSuccess << (it->second.rxBytes / it->second.txBytes) << "\t";
+        fdThrough << (throughput / 1024) << "\t";
+
+        cout << "Flow " << it->first  << " (" << t.sourceAddress
+            << " -> " << t.destinationAddress << ")\n"
+            << "\tTx Bytes: " << it->second.txBytes << "\n"
+            << "\tRx Bytes: " << it->second.rxBytes << "\n";
+
+        cout << "Throughput: " << (throughput / 1024) << " Kbps\n"
+            << "\ttransmitted Packets: " << it->second.txPackets << "\n"
+            << "\treceived Packets: " << it->second.rxPackets << "\n"
+            << "\tlost Packets: " << lostPackets << "\n";
+
+        it++;
+    }
+
+    // Média da vazão
+    fdThrough << (througMedia / (nNodes / 2)) << "\n";
+    // Média das entregas com sucesso
+    fdSuccess << (sucess / (nNodes / 2)) << "\n";
+  
+  
+  
   Simulator::Destroy ();
 }
