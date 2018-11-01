@@ -95,8 +95,8 @@ main (int argc, char *argv[])
   // First, we declare and initialize a few local variables that control some 
   // simulation parameters.
   //
-  uint32_t backboneNodes = 5; // Roteador --range > 0
-  uint32_t infraNodes = 5; // Wifi nodes  --range > 1
+  uint32_t backboneNodes = 9; // Roteador --range > 0
+  uint32_t infraNodes = 10; // Wifi nodes  --range > 1
   uint32_t lanNodes = 2; //Internet node  --range > 1
   uint32_t stopTime = 10;
   bool useCourseChangeCallback = false;
@@ -187,14 +187,11 @@ main (int argc, char *argv[])
   for (uint32_t i = 0; i < backboneNodes; ++i)
     {
       positionAlloc->Add (Vector (x, 0.0, 0.0));
-      x += 5.0;
+      x += 50.0;
     }
   mobility.SetPositionAllocator (positionAlloc);
-  mobility.SetMobilityModel ("ns3::RandomDirection2dMobilityModel",
-                             "Bounds", RectangleValue (Rectangle (-100, 100, -100, 100)),
-                             "Speed", StringValue ("ns3::ConstantRandomVariable[Constant=10]"),
-                             "Pause", StringValue ("ns3::ConstantRandomVariable[Constant=0.2]"));
-  //mobility.Install (backbone);
+  mobility.SetMobilityModel ("ns3::ConstantPositionMobilityModel");
+  mobility.Install (backbone);
   /////////////////////////////////////////////////////////////////////////// 
   //                                                                       //
   // Construct the LANs                                                    //
@@ -313,7 +310,7 @@ main (int argc, char *argv[])
         {
           subnetAlloc->Add (Vector (0.0, j, 0.0));
         }
-      //mobility.PushReferenceMobilityModel (backbone.Get (i));
+      mobility.PushReferenceMobilityModel (backbone.Get (i));
       //mobility.SetPositionAllocator (subnetAlloc);
       mobility.SetMobilityModel ("ns3::RandomDirection2dMobilityModel",
                                  "Bounds", RectangleValue (Rectangle (-150, 150, -150, 150)),
