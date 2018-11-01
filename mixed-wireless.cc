@@ -69,8 +69,16 @@
 #include "ns3/csma-module.h"
 #include "ns3/olsr-helper.h"
 #include "ns3/internet-module.h"
+#include "ns3/flow-monitor-module.h"
+
+#include <vector>
+#include <string>
+#include <stdio.h>
+#include <stdlib.h>
+#include <iostream>
 
 using namespace ns3;
+using namespace std;
 
 //
 // Define logging keyword for this file
@@ -95,12 +103,14 @@ main (int argc, char *argv[])
   // First, we declare and initialize a few local variables that control some 
   // simulation parameters.
   //
-  uint32_t backboneNodes = 9; // Roteador --range > 0
-  uint32_t infraNodes = 10; // Wifi nodes  --range > 1
+  uint32_t backboneNodes = 10; // Roteador --range > 0
+  uint32_t infraNodes = 20; // Wifi nodes  --range > 1
   uint32_t lanNodes = 2; //Internet node  --range > 1
   uint32_t stopTime = 10;
+  uint32_t nNodes = infraNodes * backboneNodes;
   bool useCourseChangeCallback = false;
   bool enableTracing = false;
+  uint32_t pktSize = 2200;
 
   //
   // Simulation defaults are typically set next, before command line
@@ -332,6 +342,15 @@ main (int argc, char *argv[])
 
   /////////////////////////////////////////////////////////////////////////// 
   //                                                                       //
+  // Config Monitor                                                        //
+  //                                                                       //
+  /////////////////////////////////////////////////////////////////////////// 
+    
+  FlowMonitorHelper flowmon;
+  Ptr<FlowMonitor> monitor = flowmon.InstallAll();
+
+  /////////////////////////////////////////////////////////////////////////// 
+  //                                                                       //
   // Application configuration                                             //
   //                                                                       //
   /////////////////////////////////////////////////////////////////////////// 
@@ -407,15 +426,7 @@ main (int argc, char *argv[])
     {
       Config::Connect ("/NodeList/*/$ns3::MobilityModel/CourseChange", MakeCallback (&CourseChangeCallback));
     }
-  /////////////////////////////////////////////////////////////////////////// 
-  //                                                                       //
-  // Config Monitor                                                        //
-  //                                                                       //
-  /////////////////////////////////////////////////////////////////////////// 
 
-    
-  FlowMonitorHelper flowmon;
-  Ptr<FlowMonitor> monitor = flowmon.InstallAll();
 
   /////////////////////////////////////////////////////////////////////////// 
   //                                                                       //
@@ -447,8 +458,9 @@ main (int argc, char *argv[])
         sucess += (1.0 * it->second.rxBytes) / it->second.txBytes;
         througMedia += throughput / 1024;
 
-        fdSuccess << (it->second.rxBytes / it->second.txBytes) << "\t";
-        fdThrough << (throughput / 1024) << "\t";
+        cout << "Transmitidos com sucesso: " << (it->second.rxBytes / it->second.txBytes) << endl;
+        
+        cout << "THROUGH: " << (throughput / 1024)  << endl;
 
         cout << "Flow " << it->first  << " (" << t.sourceAddress
             << " -> " << t.destinationAddress << ")\n"
@@ -464,9 +476,9 @@ main (int argc, char *argv[])
     }
 
     // Média da vazão
-    fdThrough << (througMedia / (nNodes / 2)) << "\n";
+    cout << "MEDIA VAZAO: " << (througMedia / (nNodes / 2)) << "\n";
     // Média das entregas com sucesso
-    fdSuccess << (sucess / (nNodes / 2)) << "\n";
+    cout << "MEDIA ENTREGA COM SUCESSO: " << (sucess / (nNodes / 2)) << "\n";
   
   
   
