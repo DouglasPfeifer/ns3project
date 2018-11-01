@@ -180,7 +180,7 @@ main (int argc, char *argv[])
   // The ad-hoc network nodes need a mobility model so we aggregate one to 
   // each of the nodes we just finished building.
   //
-  MobilityHelper mobility;
+  /*MobilityHelper mobility;
   Ptr<ListPositionAllocator> positionAlloc = 
     CreateObject<ListPositionAllocator> ();
   double x = 0.0;
@@ -194,7 +194,7 @@ main (int argc, char *argv[])
                              "Bounds", RectangleValue (Rectangle (-100, 100, -100, 100)),
                              "Speed", StringValue ("ns3::ConstantRandomVariable[Constant=10]"),
                              "Pause", StringValue ("ns3::ConstantRandomVariable[Constant=0.2]"));
-  mobility.Install (backbone);
+  mobility.Install (backbone);*/
   /////////////////////////////////////////////////////////////////////////// 
   //                                                                       //
   // Construct the LANs                                                    //
